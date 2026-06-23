@@ -11,9 +11,12 @@ services:
       - "5252:5252"
     env_file:
       - .env
+    environment:
+      - BOT_WEBHOOK_URL=http://bot:8001/force_run
     volumes:
       - ./schedule.sqlite3:/app/schedule.sqlite3
       - ./backups:/app/backups
+      - /etc/localtime:/etc/localtime:ro
     restart: always
 
   bot:
@@ -26,6 +29,7 @@ services:
       - .env
     volumes:
       - ./schedule.sqlite3:/app/schedule.sqlite3
+      - /etc/localtime:/etc/localtime:ro
     restart: always
 
   frontend:

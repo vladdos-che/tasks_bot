@@ -46,7 +46,7 @@ async def start_web_server():
     app.add_routes([web.post('/force_run', handle_force_run)])
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, 'localhost', 8001)
+    site = web.TCPSite(runner, '0.0.0.0', 8001)
     await site.start()
     logging.info("Started internal webhook server on port 8001")
 
