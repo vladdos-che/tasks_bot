@@ -1,0 +1,13 @@
+aiogram>=3.4.0
+sqlalchemy>=2.0.0
+aiosqlite
+apscheduler
+python-dotenv
+fastapi
+uvicorn
+pydantic
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+aiohttp
+openpyxl

@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: local_ai_tasks_api
+    command: uvicorn api.main:app --host 0.0.0.0 --port 5252
+    ports:
+      - "5252:5252"
+    env_file:
+      - .env
+    volumes:
+      - ./schedule.sqlite3:/app/schedule.sqlite3
+      - ./backups:/app/backups
+    restart: always
+
+  bot:
+    build: 
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: local_ai_tasks_bot
+    command: python main.py
+    env_file:
+      - .env
+    volumes:
+      - ./schedule.sqlite3:/app/schedule.sqlite3
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    container_name: local_ai_tasks_frontend
+    ports:
+      - "2525:80"
+    depends_on:
+      - api
+    restart: always
