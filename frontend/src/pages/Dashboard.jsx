@@ -1,179 +1,125 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Users, Calendar, Settings, ListTodo } from 'lucide-react';
+import { CalendarDays, Users, ShieldCheck, ListChecks, UserCog, Settings, ChevronRight, BookOpen } from 'lucide-react';
 
-export default function Dashboard() {
-  const [schedules, setSchedules] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [tasks, setTasks] = useState([]);
+export default function Guide() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
-      const [schedRes, usersRes, tasksRes] = await Promise.all([
-        axios.get('/api/schedules', { headers }),
-        axios.get('/api/users', { headers }),
-        axios.get('/api/tasks', { headers })
-      ]);
-      setSchedules(schedRes.data);
-      setUsers(usersRes.data);
-      setTasks(tasksRes.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // Compute stats
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const futureSchedules = schedules.filter(s => new Date(s.date) >= today)
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
-  
-  const nextSchedule = futureSchedules[0];
-
-  const getUserName = (id) => {
-    const user = users.find(u => u.id === id);
-    return user ? user.full_name : 'Неизвестно';
-  };
-
-  const getTaskInfo = (id) => {
-    const task = tasks.find(t => t.id === id);
-    return task ? `${task.name} (${task.code})` : 'Неизвестное задание';
-  };
+  const sections = [
+    {
+      icon: <CalendarDays size={28} />,
+      title: 'Расписание',
+      path: '/schedule',
+      color: 'rgba(59, 130, 246, 0.15)',
+      borderColor: 'rgba(59, 130, 246, 0.3)',
+      iconColor: 'var(--primary-color)',
+      description: 'Основной инструмент. Здесь вы составляете расписание на каждую встречу: выбираете дату в календаре, назначаете братьев на задания вручную или через автозаполнение, экспортируете готовое расписание в Excel.',
+    },
+    {
+      icon: <Users size={28} />,
+      title: 'Возвещатели',
+      path: '/users',
+      color: 'rgba(16, 185, 129, 0.15)',
+      borderColor: 'rgba(16, 185, 129, 0.3)',
+      iconColor: 'var(--success-color)',
+      description: 'Список всех братьев. Добавляйте новых (можно сразу несколько через запятую), редактируйте имя, телефон, адрес и роли. Генерируйте инвайт-ссылку, чтобы привязать Telegram-аккаунт.',
+    },
+    {
+      icon: <ShieldCheck size={28} />,
+      title: 'Роли и Доступы',
+      path: '/roles',
+      color: 'rgba(139, 92, 246, 0.15)',
+      borderColor: 'rgba(139, 92, 246, 0.3)',
+      iconColor: '#8b5cf6',
+      description: 'Создавайте роли и задания, а в матрице доступов настройте, какие роли могут выполнять какие задания. Здесь же включаются флаги: нужен ли напарник и требуется ли уточняющее название.',
+    },
+    {
+      icon: <ListChecks size={28} />,
+      title: 'Дни Заданий',
+      path: '/task-days',
+      color: 'rgba(245, 158, 11, 0.15)',
+      borderColor: 'rgba(245, 158, 11, 0.3)',
+      iconColor: '#f59e0b',
+      description: 'Выберите, в какие дни (будни или выходные) активно каждое задание. Конструктор расписания будет показывать только задания, подходящие для выбранного дня.',
+    },
+    {
+      icon: <UserCog size={28} />,
+      title: 'Администраторы',
+      path: '/admins',
+      color: 'rgba(236, 72, 153, 0.15)',
+      borderColor: 'rgba(236, 72, 153, 0.3)',
+      iconColor: '#ec4899',
+      description: 'Управление учётными записями администраторов. Главный администратор может создавать новых, менять пароли и удалять. Обычный администратор может менять только свой пароль.',
+    },
+    {
+      icon: <Settings size={28} />,
+      title: 'Настройки бота',
+      path: '/settings',
+      color: 'rgba(99, 102, 241, 0.15)',
+      borderColor: 'rgba(99, 102, 241, 0.3)',
+      iconColor: '#6366f1',
+      description: 'Правила автоматической рассылки уведомлений через Telegram-бот. Настройте расписание, шаблоны сообщений и охват. Здесь же — резервное копирование и восстановление базы данных.',
+    },
+  ];
 
   return (
     <div className="animate-fade-in">
-      <h1 className="mb-6">Дашборд</h1>
-      
-      {/* Quick Stats Cards */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-8">
-        <div className="glass-panel flex-1 flex items-center gap-4 p-6" style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)' }}>
-          <div className="bg-primary/20 p-4 rounded-full text-primary">
-            <Users size={32} />
-          </div>
-          <div>
-            <p className="text-secondary text-sm font-bold uppercase tracking-wider mb-1">Всего братьев</p>
-            <h2 className="text-3xl font-black text-white m-0">{users.length}</h2>
-          </div>
+      <div className="flex items-center gap-3 mb-6">
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2))',
+          padding: '12px',
+          borderRadius: '16px',
+        }}>
+          <BookOpen size={28} style={{ color: 'var(--primary-color)' }} />
         </div>
-        
-        <div className="glass-panel flex-1 flex items-center gap-4 p-6" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)' }}>
-          <div className="bg-success/20 p-4 rounded-full text-success">
-            <ListTodo size={32} />
-          </div>
-          <div>
-            <p className="text-secondary text-sm font-bold uppercase tracking-wider mb-1">Всего заданий</p>
-            <h2 className="text-3xl font-black text-white m-0">{tasks.length}</h2>
-          </div>
-        </div>
-
-        <div className="glass-panel flex-1 flex items-center gap-4 p-6" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)' }}>
-          <div className="bg-warning/20 p-4 rounded-full text-warning">
-            <Calendar size={32} />
-          </div>
-          <div>
-            <p className="text-secondary text-sm font-bold uppercase tracking-wider mb-1">Будущих встреч</p>
-            <h2 className="text-3xl font-black text-white m-0">{futureSchedules.length}</h2>
-          </div>
+        <div>
+          <h1 style={{ margin: 0 }}>Справка</h1>
+          <p className="text-secondary" style={{ margin: 0, fontSize: '0.9rem' }}>
+            Краткое описание каждого раздела
+          </p>
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Next Meeting Details */}
-        <div className="glass-panel lg:w-2/3">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="m-0 text-xl font-bold flex items-center gap-2">
-              <Calendar className="text-primary" size={24} /> 
-              Ближайшая встреча
-            </h3>
-            {nextSchedule && (
-              <span className="bg-primary/20 text-primary px-4 py-1 rounded-full text-sm font-bold">
-                {nextSchedule.meeting_type}
-              </span>
-            )}
-          </div>
-
-          {nextSchedule ? (
-            <div>
-              <p className="text-2xl font-black mb-6 text-white">
-                {new Date(nextSchedule.date).toLocaleDateString('ru-RU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-              </p>
-              
-              <div className="overflow-x-auto">
-                <table className="glass-table w-full">
-                  <thead>
-                    <tr>
-                      <th className="text-left p-3">Задание</th>
-                      <th className="text-left p-3">Основной участник</th>
-                      <th className="text-left p-3">Помощник</th>
-                      <th className="text-center p-3">№</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {nextSchedule.assignments.map((assignment, idx) => (
-                      <tr key={idx} className="transition-colors hover:bg-white/5 border-b border-white/5 last:border-0">
-                        <td className="p-3 font-medium text-white">{getTaskInfo(assignment.task_id)}</td>
-                        <td className="p-3 text-secondary">{getUserName(assignment.main_user_id)}</td>
-                        <td className="p-3 text-secondary">{assignment.helper_user_id ? getUserName(assignment.helper_user_id) : '-'}</td>
-                        <td className="p-3 text-center text-secondary">{assignment.custom_name !== null ? assignment.custom_name : '-'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+      <div className="flex flex-col" style={{ gap: '1rem' }}>
+        {sections.map((section) => (
+          <div
+            key={section.path}
+            className="glass-panel"
+            onClick={() => navigate(section.path)}
+            style={{
+              cursor: 'pointer',
+              padding: '1.25rem 1.5rem',
+              borderLeft: `3px solid ${section.borderColor}`,
+              transition: 'all 0.25s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = section.color;
+              e.currentTarget.style.transform = 'translateX(4px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '';
+              e.currentTarget.style.transform = '';
+            }}
+          >
+            <div className="flex items-center gap-4">
+              <div style={{
+                color: section.iconColor,
+                background: section.color,
+                padding: '10px',
+                borderRadius: '12px',
+                flexShrink: 0,
+              }}>
+                {section.icon}
               </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h3 style={{ margin: '0 0 4px 0', fontSize: '1.05rem' }}>{section.title}</h3>
+                <p className="text-secondary" style={{ margin: 0, fontSize: '0.85rem', lineHeight: 1.5 }}>
+                  {section.description}
+                </p>
+              </div>
+              <ChevronRight size={20} className="text-secondary" style={{ flexShrink: 0, opacity: 0.5 }} />
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center p-8 text-center bg-white/5 rounded-xl border border-white/10">
-              <Calendar size={48} className="text-secondary mb-4 opacity-50" />
-              <p className="text-lg text-secondary m-0">Нет запланированных встреч.</p>
-              <button onClick={() => navigate('/schedule')} className="btn btn-primary mt-4">
-                Перейти в расписание
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Quick Actions */}
-        <div className="glass-panel lg:w-1/3 flex flex-col">
-          <h3 className="m-0 mb-6 text-xl font-bold flex items-center gap-2">
-            ⚡ Быстрые действия
-          </h3>
-          <div className="flex flex-col gap-3">
-            <button 
-              onClick={() => navigate('/schedule')} 
-              className="btn w-full text-left justify-start p-4 hover:bg-primary/20 border border-white/10"
-              style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: 'white' }}
-            >
-              <Calendar size={20} className="mr-3 text-primary" />
-              <span className="font-medium text-lg">Составить расписание</span>
-            </button>
-            
-            <button 
-              onClick={() => navigate('/users')} 
-              className="btn w-full text-left justify-start p-4 hover:bg-success/20 border border-white/10"
-              style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: 'white' }}
-            >
-              <Users size={20} className="mr-3 text-success" />
-              <span className="font-medium text-lg">Управление братьями</span>
-            </button>
-            
-            <button 
-              onClick={() => navigate('/settings')} 
-              className="btn w-full text-left justify-start p-4 hover:bg-warning/20 border border-white/10"
-              style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: 'white' }}
-            >
-              <Settings size={20} className="mr-3 text-warning" />
-              <span className="font-medium text-lg">Настройки бота</span>
-            </button>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );

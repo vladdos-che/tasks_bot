@@ -15,7 +15,7 @@ export default function Login() {
       formData.append('username', username);
       formData.append('password', password);
       
-      const response = await axios.post('/api/auth/login', formData, {
+      const response = await axios.post('/api/auth/login', formData.toString(), {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       });
       
@@ -39,6 +39,10 @@ export default function Login() {
               className="form-input" 
               value={username} 
               onChange={e => setUsername(e.target.value)}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
+              autoComplete="username"
               required 
             />
           </div>

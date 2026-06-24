@@ -389,7 +389,7 @@ export default function ScheduleConstructor() {
       {/* Meeting Days Settings */}
       <div className="glass-panel mb-4 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
         <h3 style={{ margin: 0 }}>Дни встреч собрания</h3>
-        <div className="flex gap-2">
+        <div className="flex gap-2 meeting-days-row">
           {daysOfWeek.map(day => {
             const isActive = meetingDays.includes(day.value);
             return (
@@ -416,7 +416,7 @@ export default function ScheduleConstructor() {
       <div className="flex gap-4 mb-4">
         {/* Calendar */}
         <div className="glass-panel" style={{ flex: 1 }}>
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-4 calendar-header">
             <div className="flex items-center gap-4">
               <button onClick={prevMonth} className="btn btn-primary" style={{ padding: '0.4rem' }}><ChevronLeft size={20}/></button>
               <h3 style={{ margin: 0, minWidth: '150px', textAlign: 'center' }}>{monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}</h3>
@@ -497,7 +497,7 @@ export default function ScheduleConstructor() {
                   Заполните таблицу ниже, чтобы назначить братьев на задания для этой встречи.
                 </p>
               </div>
-              <div className="flex gap-3 mt-auto pt-4">
+              <div className="flex gap-3 mt-auto pt-4 schedule-actions">
                 <button onClick={handleClearSchedule} className="btn btn-danger" style={{ padding: '0.75rem', marginRight: 'auto' }} title="Сбросить всё на этот день">
                   <Trash2 size={20} />
                 </button>

@@ -188,7 +188,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Grid layout for App */
 .app-layout {
   display: flex;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .sidebar {
@@ -204,6 +204,7 @@ h1, h2, h3, h4, h5, h6 {
   top: 0;
   height: 100vh;
   overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .sidebar-link {
@@ -234,4 +235,194 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
+  min-width: 0;
+}
+
+/* ── Mobile bottom navigation ─────────────────────────── */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .sidebar {
+    display: none;
+  }
+
+  .main-content {
+    padding: 1rem;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px) + 1rem);
+  }
+
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(10, 16, 35, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--surface-border);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+  }
+
+  .mobile-bottom-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-bottom-nav--visible {
+    transform: translateY(0);
+  }
+
+  .mobile-bottom-nav--hidden {
+    transform: translateY(100%);
+  }
+
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 14px;
+    min-width: 60px;
+    flex: 1;
+    color: var(--text-secondary);
+    text-decoration: none;
+    background: none;
+    border: none;
+    font-family: var(--font-main);
+    cursor: pointer;
+    transition: color 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-nav-item.active {
+    color: var(--primary-color);
+  }
+
+  .mobile-nav-item.active .mobile-nav-icon {
+    background: rgba(59, 130, 246, 0.15);
+    border-radius: 12px;
+  }
+
+  .mobile-nav-item:hover {
+    color: var(--text-primary);
+  }
+
+  .mobile-nav-logout {
+    color: var(--danger-color);
+  }
+
+  .mobile-nav-logout:hover {
+    color: #f87171;
+  }
+
+  .mobile-nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 32px;
+    border-radius: 12px;
+    transition: background 0.2s ease;
+  }
+
+  .mobile-nav-label {
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+
+  /* Make tables scroll horizontally on mobile */
+  .glass-panel {
+    padding: 1rem;
+    border-radius: 0.75rem;
+    overflow-x: auto;
+  }
+
+  .glass-table {
+    min-width: 480px;
+  }
+
+  /* Typography adjustments */
+  h1 { font-size: 1.4rem; }
+  h2 { font-size: 1.15rem; }
+
+  /* Flex utilities responsive override */
+  .flex.mobile-col {
+    flex-direction: column;
+  }
+
+  /* Modal improvements on mobile */
+  .modal-overlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
+  .modal-overlay > .glass-panel {
+    max-width: 100% !important;
+    width: 100% !important;
+    border-radius: 1.25rem 1.25rem 0 0 !important;
+    padding: 1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important;
+    margin: 0 !important;
+  }
+
+  /* Page header row: title + button should wrap on mobile */
+  .page-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  /* Settings backup row: wraps text + actions */
+  .backup-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  /* Native select elements need min height for touch */
+  select.form-input {
+    min-height: 44px;
+  }
+
+  /* Ensure time input is tappable */
+  input[type="time"].form-input {
+    min-height: 44px;
+    width: 100% !important;
+  }
+
+  /* Stack all side-by-side blocks vertically on mobile */
+  .flex.gap-4 {
+    flex-direction: column;
+  }
+
+  /* Calendar header: month nav + export button */
+  .calendar-header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  /* Action buttons in date panel — wrap on narrow screens */
+  .schedule-actions {
+    flex-wrap: wrap;
+  }
+
+  .schedule-actions .btn {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Meeting days row: allow wrapping */
+  .meeting-days-row {
+    flex-wrap: wrap;
+  }
 }
