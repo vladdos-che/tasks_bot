@@ -427,26 +427,29 @@ async def export_schedules_pdf(
         for t in custom_tasks:
             for a in s.assignments:
                 if a.task_id == t.id:
-                    parts = []
-                    if a.custom_name:
-                        parts.append(f"«{a.custom_name}»")
-                    if a.main_user_id:
-                        parts.append(users.get(a.main_user_id, ""))
+                    task_name = t.name
+                    custom_name = a.custom_name or "—"
+                    main_user = users.get(a.main_user_id, "—") if a.main_user_id else "—"
+                    helper_user = users.get(a.helper_user_id, "—") if a.helper_user_id else "—"
                     
-                    info = " ".join(parts).strip()
-                    if not info:
-                        info = "—"
-                    day_tasks.append(f"• {t.name}: {info}")
+                    day_tasks.append({
+                        "task_name": task_name,
+                        "custom_name": custom_name,
+                        "main_user": main_user,
+                        "helper_user": helper_user
+                    })
                     break
                     
+        if not day_tasks:
+            continue
+            
         lines.append({"type": "date", "text": day_label})
-        if day_tasks:
-            for dt in day_tasks:
-                if len(dt) > 95:
-                    dt = dt[:92] + '...'
-                lines.append({"type": "task", "text": dt})
-        else:
-            lines.append({"type": "task", "text": "• Нет заданий"})
+        for dt in day_tasks:
+            lines.append({"type": "task_title", "text": f"• {dt['task_name']}: «{dt['custom_name']}»"})
+            lines.append({"type": "speaker", "text": f"    Выступает: {dt['main_user']}"})
+            lines.append({"type": "helper", "text": f"    Напарник: {dt['helper_user']}"})
+            lines.append({"type": "small_space"})
+            
         lines.append({"type": "space"})
 
     # --- Build PDF with matplotlib ---
@@ -469,8 +472,6 @@ async def export_schedules_pdf(
 
     bg_color = '#FFFFFF'
     header_color = '#2D3748'
-    date_color = '#1A202C'
-    task_color = '#4A5568'
 
     fig.patch.set_facecolor(bg_color)
 
@@ -496,28 +497,50 @@ async def export_schedules_pdf(
 
     y = top_margin - 0.8
     for item in lines:
-        if item["type"] == "date":
+        if item.get("type") == "date":
             ax.text(
                 left_margin, y,
                 item["text"],
                 ha='left', va='center',
-                fontsize=12, fontweight='bold',
-                color=date_color,
+                fontsize=13, fontweight='bold',
+                color='#1A202C',
                 family='sans-serif'
             )
             y -= line_height
-        elif item["type"] == "task":
+        elif item.get("type") == "task_title":
             ax.text(
                 left_margin + 0.3, y,
                 item["text"],
                 ha='left', va='center',
-                fontsize=10,
-                color=task_color,
+                fontsize=11, fontweight='bold',
+                color='#2D3748',
                 family='sans-serif'
             )
             y -= line_height
-        elif item["type"] == "space":
-            y -= (line_height * 0.5)
+        elif item.get("type") == "speaker":
+            ax.text(
+                left_margin + 0.6, y,
+                item["text"],
+                ha='left', va='center',
+                fontsize=10, style='italic',
+                color='#2B6CB0', # Blue
+                family='sans-serif'
+            )
+            y -= line_height
+        elif item.get("type") == "helper":
+            ax.text(
+                left_margin + 0.6, y,
+                item["text"],
+                ha='left', va='center',
+                fontsize=10, style='italic',
+                color='#2F855A', # Green
+                family='sans-serif'
+            )
+            y -= line_height
+        elif item.get("type") == "small_space":
+            y -= (line_height * 0.3)
+        elif item.get("type") == "space":
+            y -= (line_height * 0.7)
 
     plt.tight_layout(pad=0.5)
 
