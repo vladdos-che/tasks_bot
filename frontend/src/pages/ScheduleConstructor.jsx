@@ -252,7 +252,30 @@ export default function ScheduleConstructor() {
       link.parentNode.removeChild(link);
     } catch (err) {
       console.error(err);
-      showStatus('Ошибка при экспорте', 'error');
+      showStatus('Ошибка при экспорте Excel', 'error');
+    }
+  };
+
+  const handleExportPdf = async () => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth() + 1;
+    
+    try {
+      const response = await axios.get(`/api/schedules/export-pdf?year=${year}&month=${month}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `chart_${year}_${month.toString().padStart(2, '0')}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (err) {
+      console.error(err);
+      showStatus('Ошибка при экспорте PDF', 'error');
     }
   };
 
@@ -338,7 +361,7 @@ export default function ScheduleConstructor() {
     const allowedRoles = matrix.filter(m => m.task_id === taskId).map(m => m.role_id);
     return users.filter(user => 
       user.roles.some(r => allowedRoles.includes(r.id))
-    );
+    ).sort((a, b) => a.full_name.localeCompare(b.full_name));
   };
 
   const handleAssignmentChange = (taskId, field, value) => {
@@ -422,9 +445,14 @@ export default function ScheduleConstructor() {
               <h3 style={{ margin: 0, minWidth: '150px', textAlign: 'center' }}>{monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}</h3>
               <button onClick={nextMonth} className="btn btn-primary" style={{ padding: '0.4rem' }}><ChevronRight size={20}/></button>
             </div>
-            <button onClick={handleExportExcel} className="btn" style={{ padding: '0.4rem 0.8rem', backgroundColor: 'rgba(16, 185, 129, 0.2)', color: 'var(--success-color)', border: '1px solid rgba(16, 185, 129, 0.5)' }}>
-              Экспорт в Excel
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={handleExportPdf} className="btn" style={{ padding: '0.4rem 0.8rem', backgroundColor: 'rgba(102, 126, 234, 0.2)', color: '#667EEA', border: '1px solid rgba(102, 126, 234, 0.5)' }}>
+                PDF
+              </button>
+              <button onClick={handleExportExcel} className="btn" style={{ padding: '0.4rem 0.8rem', backgroundColor: 'rgba(16, 185, 129, 0.2)', color: 'var(--success-color)', border: '1px solid rgba(16, 185, 129, 0.5)' }}>
+                Excel
+              </button>
+            </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', textAlign: 'center' }}>
@@ -590,7 +618,7 @@ export default function ScheduleConstructor() {
                           onChange={e => handleAssignmentChange(t.id, 'helper_user_id', e.target.value)}
                         >
                           <option value="">-- Выберите --</option>
-                          {users.map(u => ( 
+                          {[...users].sort((a, b) => a.full_name.localeCompare(b.full_name)).map(u => ( 
                             <option key={u.id} value={u.id}>{u.full_name}</option>
                           ))}
                         </select>
