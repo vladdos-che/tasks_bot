@@ -417,34 +417,37 @@ async def export_schedules_pdf(
     if not custom_tasks:
         raise HTTPException(status_code=404, detail="Нет заданий с названием")
 
-    # Build data: rows = dates, columns = tasks
-    dates = [s.date for s in schedules]
-    task_ids = [t.id for t in custom_tasks]
-    task_names = [t.name for t in custom_tasks]
-    task_codes = [t.code for t in custom_tasks]
-
-    # Build cell data: cell_data[date_idx][task_idx] = text
-    cell_data = []
+    # Build data as lines
+    lines = []
+    weekday_names = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
     for s in schedules:
-        row = []
+        day_label = f"{s.date.strftime('%d.%m')} {weekday_names[s.date.weekday()]}"
+        
+        day_tasks = []
         for t in custom_tasks:
-            # Find matching assignment
-            match = None
             for a in s.assignments:
                 if a.task_id == t.id:
-                    match = a
+                    parts = []
+                    if a.custom_name:
+                        parts.append(f"«{a.custom_name}»")
+                    if a.main_user_id:
+                        parts.append(users.get(a.main_user_id, ""))
+                    
+                    info = " ".join(parts).strip()
+                    if not info:
+                        info = "—"
+                    day_tasks.append(f"• {t.name}: {info}")
                     break
-            
-            if match:
-                parts = []
-                if match.custom_name:
-                    parts.append(f"«{match.custom_name}»")
-                if match.main_user_id:
-                    parts.append(users.get(match.main_user_id, "—"))
-                row.append("\n".join(parts) if parts else "—")
-            else:
-                row.append("—")
-        cell_data.append(row)
+                    
+        lines.append({"type": "date", "text": day_label})
+        if day_tasks:
+            for dt in day_tasks:
+                if len(dt) > 95:
+                    dt = dt[:92] + '...'
+                lines.append({"type": "task", "text": dt})
+        else:
+            lines.append({"type": "task", "text": "• Нет заданий"})
+        lines.append({"type": "space"})
 
     # --- Build PDF with matplotlib ---
     month_names_ru = [
@@ -453,154 +456,68 @@ async def export_schedules_pdf(
     ]
     month_name = month_names_ru[month - 1]
 
-    n_rows = len(dates)
-    n_cols = len(custom_tasks)
-
-    # Dynamic sizing
-    col_width = max(2.4, 12.0 / max(n_cols, 1))
-    row_height = 0.7
-    fig_width = 1.5 + n_cols * col_width
-    fig_height = 2.5 + n_rows * row_height
-
-    # Limit to reasonable page size
-    fig_width = min(fig_width, 24)
-    fig_height = min(fig_height, 36)
-
+    line_height = 0.25
+    n_lines = len(lines)
+    
+    fig_width = 8.5
+    fig_height = max(11.0, 2.0 + n_lines * line_height)
+    
     fig, ax = plt.subplots(figsize=(fig_width, fig_height))
     ax.axis('off')
     ax.set_xlim(0, fig_width)
     ax.set_ylim(0, fig_height)
 
-    # Colors
-    bg_color = '#FAFBFC'
-    header_bg = '#2D3748'
-    header_text = '#FFFFFF'
-    date_bg = '#EDF2F7'
-    date_text = '#2D3748'
-    cell_text_color = '#4A5568'
-    line_color = '#E2E8F0'
-    accent_color = '#667EEA'
+    bg_color = '#FFFFFF'
+    header_color = '#2D3748'
+    date_color = '#1A202C'
+    task_color = '#4A5568'
 
     fig.patch.set_facecolor(bg_color)
 
-    # Layout
-    left_margin = 1.2
-    top_margin = fig_height - 1.2
-    table_width = fig_width - left_margin - 0.3
-    cell_w = table_width / n_cols if n_cols > 0 else table_width
+    left_margin = 1.0
+    top_margin = fig_height - 1.0
 
     # Title
     ax.text(
-        fig_width / 2, fig_height - 0.4,
-        f"График на {month_name} {year}",
-        ha='center', va='center',
+        left_margin, top_margin,
+        f"График служения на {month_name} {year}",
+        ha='left', va='center',
         fontsize=16, fontweight='bold',
-        color=header_bg,
+        color=header_color,
         family='sans-serif'
     )
 
-    # Decorative line under title
+    # Line under title
     ax.plot(
-        [fig_width * 0.3, fig_width * 0.7],
-        [fig_height - 0.7, fig_height - 0.7],
-        color=accent_color, linewidth=2, solid_capstyle='round'
+        [left_margin, fig_width - left_margin],
+        [top_margin - 0.3, top_margin - 0.3],
+        color='#E2E8F0', linewidth=1.5
     )
 
-    # Header row
-    header_y = top_margin - 0.5
-    header_h = 0.5
-
-    for j, task in enumerate(custom_tasks):
-        x = left_margin + j * cell_w
-        # Header cell background
-        rect = plt.Rectangle(
-            (x, header_y - header_h), cell_w, header_h,
-            facecolor=header_bg, edgecolor='none',
-            linewidth=0
-        )
-        ax.add_patch(rect)
-        # Header text
-        label = task.name
-        if len(label) > 14:
-            label = label[:12] + '…'
-        ax.text(
-            x + cell_w / 2, header_y - header_h / 2,
-            label,
-            ha='center', va='center',
-            fontsize=8, fontweight='bold',
-            color=header_text,
-            family='sans-serif'
-        )
-
-    # Date column header
-    rect = plt.Rectangle(
-        (0.1, header_y - header_h), left_margin - 0.2, header_h,
-        facecolor=header_bg, edgecolor='none'
-    )
-    ax.add_patch(rect)
-    ax.text(
-        (left_margin) / 2, header_y - header_h / 2,
-        'Дата',
-        ha='center', va='center',
-        fontsize=8, fontweight='bold',
-        color=header_text,
-        family='sans-serif'
-    )
-
-    # Data rows
-    for i, d in enumerate(dates):
-        y = header_y - header_h - i * row_height
-        row_bg = '#FFFFFF' if i % 2 == 0 else '#F7FAFC'
-
-        # Date cell
-        rect = plt.Rectangle(
-            (0.1, y - row_height), left_margin - 0.2, row_height,
-            facecolor=date_bg, edgecolor=line_color, linewidth=0.5
-        )
-        ax.add_patch(rect)
-
-        weekday_names = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
-        day_label = f"{d.strftime('%d.%m')} {weekday_names[d.weekday()]}"
-        ax.text(
-            (left_margin) / 2, y - row_height / 2,
-            day_label,
-            ha='center', va='center',
-            fontsize=7.5, fontweight='bold',
-            color=date_text,
-            family='sans-serif'
-        )
-
-        # Data cells
-        for j in range(n_cols):
-            x = left_margin + j * cell_w
-            rect = plt.Rectangle(
-                (x, y - row_height), cell_w, row_height,
-                facecolor=row_bg, edgecolor=line_color, linewidth=0.5
+    y = top_margin - 0.8
+    for item in lines:
+        if item["type"] == "date":
+            ax.text(
+                left_margin, y,
+                item["text"],
+                ha='left', va='center',
+                fontsize=12, fontweight='bold',
+                color=date_color,
+                family='sans-serif'
             )
-            ax.add_patch(rect)
-
-            text = cell_data[i][j]
-            if text == "—":
-                ax.text(
-                    x + cell_w / 2, y - row_height / 2,
-                    "—",
-                    ha='center', va='center',
-                    fontsize=7, color='#CBD5E0',
-                    family='sans-serif'
-                )
-            else:
-                # Truncate if too long
-                display_text = text
-                if len(display_text) > 28:
-                    display_text = display_text[:26] + '…'
-                ax.text(
-                    x + cell_w / 2, y - row_height / 2,
-                    display_text,
-                    ha='center', va='center',
-                    fontsize=6.5, color=cell_text_color,
-                    family='sans-serif',
-                    linespacing=1.3
-                )
+            y -= line_height
+        elif item["type"] == "task":
+            ax.text(
+                left_margin + 0.3, y,
+                item["text"],
+                ha='left', va='center',
+                fontsize=10,
+                color=task_color,
+                family='sans-serif'
+            )
+            y -= line_height
+        elif item["type"] == "space":
+            y -= (line_height * 0.5)
 
     plt.tight_layout(pad=0.5)
 
