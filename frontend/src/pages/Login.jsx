@@ -10,6 +10,7 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
     try {
       const formData = new URLSearchParams();
       formData.append('username', username);
@@ -22,7 +23,12 @@ export default function Login() {
       localStorage.setItem('token', response.data.access_token);
       navigate('/');
     } catch (err) {
-      setError('Неверное имя пользователя или пароль');
+      console.error(err);
+      if (err.response) {
+        setError(err.response.data?.detail || `Ошибка сервера: ${err.response.status}`);
+      } else {
+        setError(err.message || 'Сетевая ошибка или ошибка приложения');
+      }
     }
   };
 
