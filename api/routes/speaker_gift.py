@@ -136,12 +136,14 @@ async def force_send(
     current_admin: AdminUser = Depends(get_current_admin_user)
 ):
     try:
-        bot_webhook_url = os.getenv("BOT_WEBHOOK_URL", "http://localhost:8001/force_gift_send")
+        bot_host = os.getenv("BOT_INTERNAL_HOST", "http://localhost:8001")
+        url = f"{bot_host}/force_gift_send"
         async with aiohttp.ClientSession() as session:
-            async with session.post(bot_webhook_url) as response:
+            async with session.post(url) as response:
                 if response.status == 200:
                     return {"message": "Уведомление отправлено"}
                 else:
                     raise HTTPException(status_code=500, detail="Бот вернул ошибку")
     except aiohttp.ClientError as e:
         raise HTTPException(status_code=500, detail=f"Не удалось связаться с ботом: {str(e)}")
+

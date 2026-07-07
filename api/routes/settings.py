@@ -49,7 +49,8 @@ async def force_run_bot(
     # Assuming bot is running locally and exposes a simple webhook for trigger
     try:
         import os
-        bot_webhook_url = os.getenv("BOT_WEBHOOK_URL", "http://localhost:8001/force_run")
+        bot_host = os.getenv("BOT_INTERNAL_HOST", "http://localhost:8001")
+        bot_webhook_url = f"{bot_host}/force_run"
         async with aiohttp.ClientSession() as session:
             payload = {"rule_id": request.rule_id} if request.rule_id else {}
             async with session.post(bot_webhook_url, json=payload) as response:
