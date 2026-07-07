@@ -3,6 +3,7 @@ from aiogram import Bot, Dispatcher
 from config import BOT_TOKEN
 from bot.handlers.registration import router as registration_router
 from scheduler.notifier import send_notifications
+from scheduler.gift_notifier import send_gift_notification
 from aiohttp import web
 import logging
 from datetime import datetime
@@ -41,9 +42,17 @@ async def handle_force_run(request):
     asyncio.create_task(send_notifications(bot, rule_to_run))
     return web.json_response({"status": "ok"})
 
+async def handle_force_gift_send(request):
+    logging.info("Force gift send triggered via webhook")
+    asyncio.create_task(send_gift_notification(bot))
+    return web.json_response({"status": "ok"})
+
 async def start_web_server():
     app = web.Application()
-    app.add_routes([web.post('/force_run', handle_force_run)])
+    app.add_routes([
+        web.post('/force_run', handle_force_run),
+        web.post('/force_gift_send', handle_force_gift_send),
+    ])
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, '0.0.0.0', 8001)
@@ -88,6 +97,21 @@ async def notification_scheduler(bot: Bot):
                             last_sent_minute = current_minute
                         except json.JSONDecodeError:
                             logging.error("Failed to parse notification_schedules json")
+
+                    # ── Speaker Gift scheduler ──
+                    gift_result = await session.execute(select(Setting).where(Setting.key == 'speaker_gift_config'))
+                    gift_setting = gift_result.scalars().first()
+                    if gift_setting and gift_setting.value:
+                        try:
+                            gift_config = json.loads(gift_setting.value)
+                            gift_day = int(gift_config.get('day_of_week', -1))
+                            gift_time = gift_config.get('time', '')
+                            if gift_day == js_day and gift_time == current_minute:
+                                logging.info(f"Triggering speaker gift notification at {current_minute}")
+                                asyncio.create_task(send_gift_notification(bot))
+                        except (json.JSONDecodeError, TypeError) as e:
+                            logging.error(f"Failed to parse speaker_gift_config: {e}")
+
             except Exception as e:
                 logging.error(f"Error in scheduler: {e}")
                 
@@ -96,6 +120,10 @@ async def notification_scheduler(bot: Bot):
 async def main():
     logging.basicConfig(level=logging.INFO)
     
+    # Ensure all DB tables exist
+    from db.database import init_db
+    await init_db()
+
     # Start aiohttp server for FastAPI to trigger
     await start_web_server()
 

@@ -121,3 +121,21 @@ class AutoDraftRequest(BaseModel):
     exclude_tasks: Optional[str] = None
     current_assignments: List[ScheduleAssignmentBase] = []
 
+# Speaker Gift schemas
+class SpeakerGiftQueueItemOut(BaseModel):
+    id: int
+    user_id: int
+    position: int
+    user_name: str
+    telegram_id: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
+
+class SpeakerGiftQueueSet(BaseModel):
+    user_ids: List[int]
+
+class SpeakerGiftConfigIn(BaseModel):
+    day_of_week: int  # 0=Sun, 1=Mon ... 6=Sat
+    time: str          # "HH:MM"
+    message_template: str
+
+

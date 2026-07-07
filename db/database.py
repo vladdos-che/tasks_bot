@@ -20,8 +20,11 @@ Base = declarative_base()
 
 async def init_db():
     """Initializes the database tables."""
+    # Import all models so Base.metadata knows about every table.
+    # This guarantees create_all will create ALL tables even on a fresh DB.
+    import db.models  # noqa: F401
+
     async with engine.begin() as conn:
-        # This command will create tables if they don't exist
         await conn.run_sync(Base.metadata.create_all)
 
 async def get_db():

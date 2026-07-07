@@ -93,3 +93,11 @@ class Setting(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     key = Column(String, unique=True, nullable=False)
     value = Column(JSON, nullable=False)
+
+class SpeakerGiftQueue(Base):
+    __tablename__ = 'speaker_gift_queue'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    position = Column(Integer, nullable=False)
+
+    user = relationship("User")

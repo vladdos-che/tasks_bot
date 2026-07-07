@@ -8,6 +8,7 @@ import TaskDays from './pages/TaskDays'
 import ScheduleConstructor from './pages/ScheduleConstructor'
 import Settings from './pages/Settings'
 import Admins from './pages/Admins'
+import SpeakerGift from './pages/SpeakerGift'
 
 // A simple auth wrapper (in real app, use Context/Zustand)
 const PrivateRoute = ({ children }) => {
@@ -33,6 +34,7 @@ function App() {
           <Route path="schedule" element={<ScheduleConstructor />} />
           <Route path="settings" element={<Settings />} />
           <Route path="admins" element={<Admins />} />
+          <Route path="speaker-gift" element={<SpeakerGift />} />
         </Route>
       </Routes>
     </Router>
