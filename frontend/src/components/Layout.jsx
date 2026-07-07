@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { CalendarDays, Users, Settings, LogOut, ShieldCheck, UserCog, ListChecks, BookOpen, Gift } from 'lucide-react'
+import { CalendarDays, Users, Settings, LogOut, ShieldCheck, UserCog, ListChecks, BookOpen, Gift, Megaphone } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 export default function Layout() {
@@ -44,6 +44,7 @@ export default function Layout() {
     { to: '/task-days', icon: <ListChecks size={22} />, label: 'Задания' },
     { to: '/admins', icon: <UserCog size={22} />, label: 'Админы' },
     { to: '/speaker-gift', icon: <Gift size={22} />, label: 'Подарок' },
+    { to: '/vps-conducting', icon: <Megaphone size={22} />, label: 'Проведение ВПС' },
     { to: '/settings', icon: <Settings size={22} />, label: 'Настройки' },
   ];
 

@@ -101,3 +101,11 @@ class SpeakerGiftQueue(Base):
     position = Column(Integer, nullable=False)
 
     user = relationship("User")
+
+class VpsConductingQueue(Base):
+    __tablename__ = 'vps_conducting_queue'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    position = Column(Integer, nullable=False)
+
+    user = relationship("User")

@@ -4,6 +4,7 @@ from config import BOT_TOKEN
 from bot.handlers.registration import router as registration_router
 from scheduler.notifier import send_notifications
 from scheduler.gift_notifier import send_gift_notification
+from scheduler.vps_notifier import send_vps_notification
 from aiohttp import web
 import logging
 from datetime import datetime
@@ -47,11 +48,17 @@ async def handle_force_gift_send(request):
     await send_gift_notification(bot)
     return web.json_response({"status": "ok"})
 
+async def handle_force_vps_send(request):
+    logging.info("Force vps send triggered via webhook")
+    await send_vps_notification(bot)
+    return web.json_response({"status": "ok"})
+
 async def start_web_server():
     app = web.Application()
     app.add_routes([
         web.post('/force_run', handle_force_run),
         web.post('/force_gift_send', handle_force_gift_send),
+        web.post('/force_vps_send', handle_force_vps_send),
     ])
     runner = web.AppRunner(app)
     await runner.setup()
@@ -111,6 +118,20 @@ async def notification_scheduler(bot: Bot):
                                 asyncio.create_task(send_gift_notification(bot))
                         except (json.JSONDecodeError, TypeError) as e:
                             logging.error(f"Failed to parse speaker_gift_config: {e}")
+
+                    # ── VPS Conducting scheduler ──
+                    vps_result = await session.execute(select(Setting).where(Setting.key == 'vps_conducting_config'))
+                    vps_setting = vps_result.scalars().first()
+                    if vps_setting and vps_setting.value:
+                        try:
+                            vps_config = json.loads(vps_setting.value)
+                            vps_day = int(vps_config.get('day_of_week', -1))
+                            vps_time = vps_config.get('time', '')
+                            if vps_day == js_day and vps_time == current_minute:
+                                logging.info(f"Triggering VPS conducting notification at {current_minute}")
+                                asyncio.create_task(send_vps_notification(bot))
+                        except (json.JSONDecodeError, TypeError) as e:
+                            logging.error(f"Failed to parse vps_conducting_config: {e}")
 
             except Exception as e:
                 logging.error(f"Error in scheduler: {e}")

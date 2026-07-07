@@ -138,4 +138,22 @@ class SpeakerGiftConfigIn(BaseModel):
     time: str          # "HH:MM"
     message_template: str
 
+# Vps Conducting schemas
+class VpsConductingQueueItemOut(BaseModel):
+    id: int
+    user_id: int
+    position: int
+    user_name: str
+    telegram_id: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
+
+class VpsConductingQueueSet(BaseModel):
+    user_ids: List[int]
+
+class VpsConductingConfigIn(BaseModel):
+    day_of_week: int  # 0=Sun, 1=Mon ... 6=Sat
+    time: str          # "HH:MM"
+    message_template: str
+
+
 

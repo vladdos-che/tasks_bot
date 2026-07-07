@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 
 from db.database import init_db
-from api.routes import auth, users, roles, tasks, schedules, settings, admins, backups, speaker_gift
+from api.routes import auth, users, roles, tasks, schedules, settings, admins, backups, speaker_gift, vps_conducting
 app = FastAPI(title="Schedule Bot API")
 
 app.add_middleware(
@@ -23,6 +23,7 @@ app.include_router(settings.router, prefix="/api/settings", tags=["Settings"])
 app.include_router(admins.router, prefix="/api/admins", tags=["Admins"])
 app.include_router(backups.router, prefix="/api/backups", tags=["Backups"])
 app.include_router(speaker_gift.router, prefix="/api/speaker-gift", tags=["SpeakerGift"])
+app.include_router(vps_conducting.router, prefix="/api/vps-conducting", tags=["VpsConducting"])
 @app.on_event("startup")
 async def on_startup():
     await init_db()
