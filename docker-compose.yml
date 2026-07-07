@@ -12,7 +12,7 @@ services:
     env_file:
       - .env
     environment:
-      - BOT_WEBHOOK_URL=http://bot:8001/force_run
+      - BOT_INTERNAL_HOST=http://bot:8001
     volumes:
       - ./schedule.sqlite3:/app/schedule.sqlite3
       - ./backups:/app/backups
