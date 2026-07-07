@@ -44,7 +44,7 @@ async def handle_force_run(request):
 
 async def handle_force_gift_send(request):
     logging.info("Force gift send triggered via webhook")
-    asyncio.create_task(send_gift_notification(bot))
+    await send_gift_notification(bot)
     return web.json_response({"status": "ok"})
 
 async def start_web_server():

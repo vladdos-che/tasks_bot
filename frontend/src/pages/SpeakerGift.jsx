@@ -203,6 +203,7 @@ export default function SpeakerGift() {
     try {
       await axios.post('/api/speaker-gift/force-send', {}, { headers });
       showStatus('Уведомление отправлено текущему ответственному');
+      fetchAll();
     } catch (err) {
       showStatus(err.response?.data?.detail || 'Ошибка отправки', 'error');
     }
