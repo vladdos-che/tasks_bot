@@ -481,7 +481,7 @@ async def export_schedules_pdf(
     # Title
     ax.text(
         left_margin, top_margin,
-        f"График служения на {month_name} {year}",
+        f"График заданий на {month_name} {year}",
         ha='left', va='center',
         fontsize=16, fontweight='bold',
         color=header_color,

@@ -30,6 +30,9 @@ async def send_notifications(bot: Bot, rule: dict = None) -> None:
         
         if scope == 'next':
             query = query.limit(1)
+        elif scope == 'skip_next':
+            # Get the meeting after the nearest one (i.e. skip one)
+            query = query.limit(2)
         elif scope == 'next_30_days':
             query = query.where(Schedule.date <= today + timedelta(days=30))
         elif scope == 'current_month':
@@ -60,6 +63,13 @@ async def send_notifications(bot: Bot, rule: dict = None) -> None:
             
         result = await session.execute(query)
         schedules = result.scalars().unique().all()
+
+        # For skip_next, drop the nearest meeting and keep only the one after
+        if scope == 'skip_next':
+            if len(schedules) < 2:
+                logging.info("No meeting found after the nearest one for skip_next scope.")
+                return
+            schedules = schedules[1:]  # Keep only the second meeting
 
         if not schedules:
             logging.info("No upcoming schedules found.")

@@ -245,6 +245,7 @@ export default function Settings() {
                   onChange={(e) => updateRule(index, 'scope', e.target.value)}
                 >
                   <option value="next">Только ближайшая встреча</option>
+                  <option value="skip_next">Через одну встречу (не ближайшая, а следующая)</option>
                   <option value="next_30_days">Ближайшие 30 дней от сегодня</option>
                   <option value="current_month">До конца текущего месяца</option>
                   <option value="next_month">На весь следующий месяц (с 1-го числа)</option>
